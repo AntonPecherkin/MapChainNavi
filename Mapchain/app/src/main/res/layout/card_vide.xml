@@ -8,12 +8,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/cv"
+
         >
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="16dp"
+            android:background="#d33232"
             >
             <ImageView
                 android:layout_width="60dp"
@@ -26,6 +28,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/person_name"
                 android:hint="Id"
+                android:textColor="#ffffff"
                 android:layout_toRightOf="@+id/imageId"
                 android:layout_marginLeft="10dp"
                 android:layout_alignParentTop="true"
@@ -37,6 +40,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/person_age"
                 android:hint="Description"
+                android:textColor="#ffffff"
                 android:layout_toRightOf="@+id/imageId"
                 android:layout_marginLeft="10dp"
                 android:layout_below="@+id/person_name"
@@ -47,6 +51,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/price"
                 android:hint="Price"
+                android:textColor="#ffffff"
                 android:layout_toRightOf="@+id/person_age"
                 android:layout_marginLeft="10dp"
                 android:layout_below="@+id/person_name"

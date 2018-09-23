@@ -16,6 +16,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -53,16 +54,22 @@ public class MapActivity extends AppCompatActivity implements GoogleMap.OnMyLoca
     private static final int LOCATION_REQUEST_CODE = 1;
     private GoogleMap mMap;
     private FusedLocationProviderClient fusedLocationProviderClient;
-    private final static float DEFAULT_ZOOM = 15f;
+    private NaviParser firstNavi = new NaviParser();
+    private NaviParser secondNavi = new NaviParser();
+    private NaviParser thirdNavi = new NaviParser();
+    private static int countQuest = 0;
+    private NaviParser parser = new NaviParser();
+    private final static float DEFAULT_ZOOM = 12f;
     private ImageView imageView;
     private boolean ethContract = false;
     private String line;
     private TextView textView;
     private ContractModel person;
     private Marker marker;
-    private final NaviParser parser = new NaviParser();
+
     private Button nxtBtn;
-    private final static int PROXIMITY_RADIUS = 10000;
+    private Button stopBtn;
+    private final static int PROXIMITY_RADIUS = 1000_00000;
     private double latitude = 1d, longitude = 2d;
     private Object dataTransfer[];
     private Circle mCircle;
@@ -70,12 +77,18 @@ public class MapActivity extends AppCompatActivity implements GoogleMap.OnMyLoca
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_map);
+
         nxtBtn = findViewById(R.id.nexBtn);
+        stopBtn = findViewById(R.id.infoBtn);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         imageView = findViewById(R.id.place_info);
         textView = findViewById(R.id.infoPoint);
+        firstNavi.setAddresss("703498");
+        secondNavi.setAddresss("703499");
+        thirdNavi.setAddresss("703500");
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         person = (ContractModel)getIntent().getSerializableExtra("MyClass");
         Log.d("tag",person.getAddress());
@@ -136,6 +149,27 @@ public class MapActivity extends AppCompatActivity implements GoogleMap.OnMyLoca
         });
 
         nxtBtn.setText("Start and pay");
+        stopBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog alertDialog = new AlertDialog.Builder(MapActivity.this).create();
+                alertDialog.setTitle("Do you want to stop this game ?");
+                alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "NO",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+
+                            }
+                        });
+                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "YES",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                onBackPressed();
+                            }
+                        });
+                alertDialog.show();
+            }
+        });
         nxtBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -146,34 +180,67 @@ public class MapActivity extends AppCompatActivity implements GoogleMap.OnMyLoca
                             new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
                                     dialog.dismiss();
-
                                 }
                             });
                     alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "YES",
                             new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
                                     ethContract = true;
+                                    nxtBtn.setText("Next");
+                                    stopBtn.setVisibility(View.VISIBLE);
+                                    stopBtn.setText("Stop");
                                     nxtBtn.callOnClick();
                                 }
                             });
                     alertDialog.show();
                 }
                 if(ethContract) {
-                    line = "";
-                    try {
-                        line = new AsyncTaskP().execute(NaviParser.URL+parser.getContainer()+"/"+parser.getAddresss()).get();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
+                    countQuest++;
+                    switch (countQuest) {
+                        case 1:
+                            parser = firstNavi;
+                            break;
+                        case 2:
+                            parser = secondNavi;
+                            break;
+                        case 3:
+                            parser = thirdNavi;
+                            break;
+                            default: countQuest = 0;
                     }
 
-                    String title = parser.parserRes(line).getName();
-                    moveCamera(new CoordinateModel(parser.parserCoordinates(line).getLatitude() ,parser.parserCoordinates(line).getLongitute()), DEFAULT_ZOOM, title);
-                    textView.setText(textView.getText() + "\n" + title);
+                    if(countQuest == 0) {
+                        AlertDialog alertDialog = new AlertDialog.Builder(MapActivity.this).create();
+                        alertDialog.setTitle("Quest Complete!");
+                        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                        onBackPressed();
+                                    }
+                                });
+                        alertDialog.show();
+                    }
+                    nextStep(parser);
+
                 }
             }
         });
+    }
+
+    public void nextStep(NaviParser parser) {
+        line = "";
+        try {
+            line = new AsyncTaskP().execute(NaviParser.URL+parser.getContainer()+"/"+parser.getAddresss()).get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        String title = parser.parserRes(line).getName();
+        moveCamera(new CoordinateModel( parser.parserCoordinates(line).getLatitude(), parser.parserCoordinates(line).getLongitute()), DEFAULT_ZOOM, title);
+        textView.setText(textView.getText() + "\n" + title);
     }
 
     @Override
@@ -240,8 +307,8 @@ public class MapActivity extends AppCompatActivity implements GoogleMap.OnMyLoca
                                 moveCamera(new CoordinateModel(location.getLatitude(), location.getLongitude()),DEFAULT_ZOOM, title);
                                 textView.setText(textView.getText() + "\n" + title);
                             } else {
-                                String title = "Your start point";
-                                CoordinateModel coordinateModel = new CoordinateModel(Double.parseDouble(person.getLog()), Double.parseDouble(person.getLat()));
+                                String title = person.getDescription();
+                                CoordinateModel coordinateModel = new CoordinateModel(Double.parseDouble(person.getLat()), Double.parseDouble(person.getLog()));
                                 moveCamera(coordinateModel,DEFAULT_ZOOM, title);
                                 LatLng latLng = new LatLng(coordinateModel.getLatitude(), coordinateModel.getLongitute());
                                 if(mCircle == null || marker == null){

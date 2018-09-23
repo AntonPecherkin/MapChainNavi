@@ -24,7 +24,7 @@ public class NaviParser implements Parser {
     }
 
     private String container = "7";
-    private String addresss = "703295";
+    private String addresss = "703498";
     public final static String URL = "https://staging-api.naviaddress.com/api/v1.5/addresses/";
 
     @Override

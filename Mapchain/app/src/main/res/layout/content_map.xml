@@ -21,14 +21,15 @@
             android:src="@drawable/ic_info_outline_black_24dp"/>
 
     <TextView
-        android:layout_width="100dp"
+        android:layout_width="120dp"
         android:elevation="10dp"
         android:layout_marginTop="10dp"
         android:id="@+id/infoPoint"
         android:layout_margin="10dp"
-        android:text="Point info"
+        android:text="Points:"
         android:textAlignment="center"
         android:background="#FFF"
+        android:textStyle="bold"
         android:layout_below="@+id/place_info"
         android:layout_height="200dp"/>
 
@@ -53,6 +54,7 @@
             android:orientation="horizontal"
             android:layout_weight="6">
             <Button
+                style="@style/Widget.AppCompat.Button.Colored"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/infoBtn"
@@ -61,6 +63,8 @@
                 android:visibility="gone"
                 android:text="@string/info"/>
             <Button
+                android:background="#d33232"
+                android:textColor="#ffffff"
                 android:layout_weight="1"
                 android:layout_margin="10dp"
                 android:layout_width="match_parent"
